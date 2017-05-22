@@ -1,0 +1,74 @@
+import /init.userfastboot.rc
+import /init.recovery.${ro.hardware}.rc
+
+on early-init
+    loglevel 7
+
+    # Set the security context for the init process.
+    # This should occur before anything else (e.g. ueventd) is started.
+    setcon u:r:init:s0
+
+    start ueventd
+
+on init
+    export PATH /sbin:/system/sbin:/system/bin:/system/xbin
+    export ANDROID_ROOT /system
+    export ANDROID_DATA /data
+
+    symlink /system/etc /etc
+
+    mkdir /tmp
+    mount tmpfs tmpfs /tmp
+    chmod 1777 /tmp
+
+    # Erasing partitions can take a long time, don't whine about it
+    write /proc/sys/kernel/hung_task_timeout_secs 0
+
+# Mount filesystems and start core system services.
+on late-init
+    trigger early-fs
+    trigger fs
+    trigger post-fs
+    trigger post-fs-data
+
+    # Load properties from /system/ + /factory after fs mount. Place
+    # this in another action so that the load will be scheduled after the prior
+    # issued fs triggers have completed.
+    trigger load_all_props_action
+
+    trigger early-boot
+    trigger boot
+
+on fs
+    mount efivarfs none /sys/firmware/efi/efivars
+
+on boot
+    ifup lo
+    hostname localhost
+    domainname localdomain
+    class_start default
+
+service ueventd /sbin/ueventd
+    critical
+    seclabel u:r:ueventd:s0
+
+service userfastboot /sbin/userfastboot
+    oneshot
+    seclabel u:r:userfastboot:s0
+
+service console /system/bin/sh
+    oneshot
+    console
+    disabled
+    user shell
+    group log
+    seclabel u:r:shell:s0
+
+on property:ro.debuggable=1
+    start console
+
+# not present in userfastboot image
+#service pstore-clean /system/bin/pstore-clean
+#    oneshot
+#    seclabel u:r:pstore-clean:s0
+
