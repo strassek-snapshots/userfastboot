@@ -6,7 +6,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := gpt.c
 LOCAL_MODULE := libgpt_static
 LOCAL_MODULE_TAGS := optional
-LOCAL_CFLAGS := -Wall -Werror -DDEBUG_STDOUT=1
+LOCAL_CFLAGS := -Wall -DDEBUG_STDOUT=1
 LOCAL_C_INCLUDES := bootable/userfastboot/libgpt/include \
 		    external/zlib \
 
