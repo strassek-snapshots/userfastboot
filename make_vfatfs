@@ -46,7 +46,7 @@ if [ $mod != 0 ]; then
 fi
 
 echo "Create FAT filesystem of size $img_size"
-mkdosfs -n ANDROIDIA -C $OUT_FILE $img_size
+mkdosfs -n PROJECTCELADON -C $OUT_FILE $img_size
 
 for f in $IN_DIR/*; do
     echo "Copying $f"
